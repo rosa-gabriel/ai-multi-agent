@@ -9,31 +9,30 @@ response = completion(
     model="groq/llama3-8b-8192",
     messages=[
         {"role": "user", "content": "hello"}
-        ],
+    ],
 )
 print(response)
 
 from google.colab import drive
 drive.mount('/content/drive')
 
-market_researcher = Agent(
-    role="Pesquisador de Mercado Sênior", 
-    goal = "Garanta que o negócio {ideia} seja respaldado por pesquisas e \
-    dados sólidos. Realize uma pesquisa abrangente e realista para a ideia de negócio \
-    {ideia}. Forneça insights da sua pesquisa para o empreendedor.", 
-    backstory="Você é um especialista de mercado habilitado para pesquisas de mercado e \
-    muito habilidoso em validar ideias de negócios. Você trabalhou com várias empresas \
-    estabelecidas.", 
+pricing_researcher = Agent(
+    role="Pesquisador de Preços", 
+    goal="Analise e determine o melhor preço para o produto {produto}. \
+    Considere fatores de mercado, concorrência e percepção de valor.",
+    backstory="Você é um especialista em pesquisa de preços e mercado. Você possui vasta \
+    experiência em ajudar empresas a definir estratégias de precificação com base em dados.",
     allow_delegation=False, 
     verbose=True, 
     llm="groq/llama3-8b-8192" 
 )
 
-enterpreneur_agent = Agent(
-    role="Empreendedor experiente", 
-    goal = "Criar um plano de marketing e um plano de negócios para {ideia}", 
-    backstory="Você construiu empresas de sucesso. Você tem habilidade de \
-    criar novas ideias de negócios e planos de marketing.", 
+pricing_strategist = Agent(
+    role="Estratégia de Preços", 
+    goal="Desenvolver uma estratégia de precificação para o produto {produto}. \
+    Inclua recomendações baseadas em pesquisa e análise de mercado.",
+    backstory="Você tem experiência em criar e implementar estratégias de precificação para \
+    produtos variados, ajudando empresas a maximizar lucros e satisfação do cliente.",
     allow_delegation=False, 
     verbose=True, 
     llm="groq/llama3-8b-8192" 
@@ -41,45 +40,33 @@ enterpreneur_agent = Agent(
 
 tool = SerperDevTool()
 
-task_market_researcher = Task(
-    description= " Analise os pontos fortes, fracos, oportunidades e ameaças da ideia de \
-    negócio {ideia}"\
-    "Estimar o tamanho do mercado  e o potencial de crescimento para essa ideia. \
-    Avalie a viabilidade do modelo de negócios. \
-    Avalie a existência de outras empresas com a mesma ideia no mercado. \
-    Forneça insights para a criação do plano de negócios.", 
+task_pricing_researcher = Task(
+    description="Analise o mercado e colete dados sobre a faixa de preços para o produto {produto}. \
+    Considere a concorrência e fatores que afetam a percepção de preço. \
+    Forneça insights sobre o melhor preço para maximizar vendas e lucro.",
     expected_output=(
-        "Um relatório detalhado de pesquisa de mercado para a ideia mencionada {ideia}. \
-        Inclua as referências a dados externos para análise de mercado."
+        "Um relatório detalhado com a análise de preços do produto {produto}. \
+        Inclua referências a dados externos e sugestões de preços."
     ), 
     tools=[tool], 
-    agent=market_researcher,
+    agent=pricing_researcher,
 )
 
-task_enterpreneur = Task(
-    description= "Crie o plano de marketing e o plano de negócios para a {ideia} \
-    Garanta que não haja discrepância entre os planos gerados. \
-    Verifique se todos os conceitos importantes de planos de negócio e de \
-    marketing foram cobertos. ", 
+task_pricing_strategist = Task(
+    description="Desenvolva uma estratégia de precificação para o produto {produto}. \
+    Inclua recomendações sobre como posicionar o produto no mercado e ajustar o preço \
+    conforme a demanda e feedback do consumidor.",
     expected_output=(
-        "A saída deve conter um plano de negócios final para a {ideia}\
-        E um plano de marketing final para a {ideia}."
+        "Um plano de estratégia de preços para o produto {produto} que inclua recomendações \
+        práticas e possíveis ajustes de preços baseados em mercado."
     ), 
     tools=[tool], 
-    agent=enterpreneur_agent,
-    output_file='analise.md'
+    agent=pricing_strategist,
 )
 
 crew = Crew(
-    agents= [market_researcher, enterpreneur_agent],
-    tasks=[task_market_researcher, task_enterpreneur],
-    verbose = True,
-    max_rpm = 25
-)
-
-crew = Crew(
-    agents= [market_researcher, enterpreneur_agent],
-    tasks=[task_market_researcher, task_enterpreneur],
-    verbose = True,
-    max_rpm = 25
+    agents=[pricing_researcher, pricing_strategist],
+    tasks=[task_pricing_researcher, task_pricing_strategist],
+    verbose=True,
+    max_rpm=25
 )
