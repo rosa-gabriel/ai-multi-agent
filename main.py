@@ -70,3 +70,7 @@ crew = Crew(
     verbose=True,
     max_rpm=25
 )
+
+result = crew.kickoff(
+    inputs={"produto": "Bola de gude. "}
+)
